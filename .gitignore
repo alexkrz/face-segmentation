@@ -1,0 +1,4 @@
+# We do not want to enforce our vscode settings
+/.vscode/
+
+# Other ignores follow here

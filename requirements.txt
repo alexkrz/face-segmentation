@@ -2,3 +2,5 @@ pre-commit==4.0.*
 transformers==4.46.*
 matplotlib==3.9.*
 ipywidgets==8.1.*
+datasets==2.21.*
+monai==1.3.*

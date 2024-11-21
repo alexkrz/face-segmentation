@@ -1,3 +1,3 @@
-# vscode-python-template
+# SAM Face
 
-A Template for Python Programming in VSCode
+Face Segmentation using Segment Anything Model.

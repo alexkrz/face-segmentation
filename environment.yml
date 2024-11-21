@@ -1,6 +1,11 @@
 channels:
+  - pytorch
+  - nvidia
   - conda-forge
   - defaults
 dependencies:
   - python=3.11.*
+  - pytorch=2.4.*=*cuda*
+  - torchvision==0.19.*
+  - ipykernel=6.29.*
   - pip>=23

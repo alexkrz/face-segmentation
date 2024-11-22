@@ -3,3 +3,6 @@
 
 # Other ignores follow here
 /data/
+
+# Artifacts
+__pycache__/

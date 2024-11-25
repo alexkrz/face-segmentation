@@ -5,3 +5,5 @@ ipywidgets==8.1.*
 datasets==2.21.*
 monai==1.3.*
 colorcet==3.1.*
+accelerate==1.1.*
+evaluate==0.4.*

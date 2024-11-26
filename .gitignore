@@ -3,6 +3,8 @@
 
 # Other ignores follow here
 /data/
+/checkpoints/
+/logs/
 
 # Artifacts
 __pycache__/

@@ -1,8 +1,9 @@
 import json
 import os
 from pathlib import Path
-from typing import Tuple
+from typing import Optional, Tuple
 
+import numpy as np
 import pandas as pd
 import torch
 from accelerate import Accelerator
@@ -18,14 +19,25 @@ from transformers import (
     TrainingArguments,
 )
 
+IMAGENET_DEFAULT_MEAN = [0.485, 0.456, 0.406]
+IMAGENET_DEFAULT_STD = [0.229, 0.224, 0.225]
+
 
 class SegmentationDataset(Dataset):
+    segformer_img_tfms = transforms.Compose(
+        [
+            transforms.Resize(512),
+            transforms.CenterCrop(512),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=IMAGENET_DEFAULT_MEAN, std=IMAGENET_DEFAULT_STD),
+        ]
+    )
+
     def __init__(
         self,
         root_dir: Path,
-        # TODO: Add normalization to img_tfm
-        img_tfm: transforms.Compose = transforms.Compose([transforms.ToTensor()]),
-        mask_tfm: transforms.Compose = transforms.Compose([transforms.ToTensor()]),
+        img_tfm: Optional[transforms.Compose] = segformer_img_tfms,
+        mask_tfm: Optional[str] = "custom",
     ):
         assert root_dir.exists()
         self.img_dir = root_dir / "images"
@@ -44,22 +56,24 @@ class SegmentationDataset(Dataset):
     def __len__(self):
         return len(self.df)
 
-    def __getitem__(self, idx) -> dict:
+    def __getitem__(self, idx):
         entry = self.df.loc[idx]
         img = Image.open(self.img_dir / entry["img_fp"])
         if self.img_tfm is not None:
             img = self.img_tfm(img)
         mask = Image.open(self.mask_dir / entry["mask_fp"])
         if self.mask_tfm is not None:
-            mask = self.mask_tfm(mask)
-        return {"pixel_values": img, "label": mask}
+            mask = np.array(mask, dtype=np.int64)
+            mask = torch.tensor(mask)
+        return img, mask
 
 
 def training_function(cfg, training_args):
+
     torch_dataset = SegmentationDataset(
         root_dir=Path(cfg["data_dir"]),
-        img_tfm=None,
-        mask_tfm=None,
+        # img_tfm=None,
+        # mask_tfm=None,
     )
     # print(len(dataset))
     # print(dataset.df.head(20))
@@ -69,6 +83,19 @@ def training_function(cfg, training_args):
     id2label = torch_dataset.id2label
     label2id = {v: k for k, v in id2label.items()}
 
+    train_set, val_set = random_split(
+        torch_dataset,
+        [0.9, 0.1],
+        generator=torch.Generator().manual_seed(cfg["seed"]),
+    )
+
+    # train_dataloader = DataLoader(train_set, batch_size=4, shuffle=True, num_workers=8)
+    # val_dataloader = DataLoader(val_set, batch_size=4, shuffle=False, num_workers=8)
+    # batch = next(iter(train_dataloader))
+    # imgs, masks = batch
+    # print(imgs.shape)
+
+    """
     # Convert torch_dataset into hf_dataset
     def gen():
         for idx in range(len(torch_dataset)):
@@ -82,8 +109,8 @@ def training_function(cfg, training_args):
     # Shuffle the dataset and split in train and test set
     ds = ds.shuffle(seed=cfg["seed"])
     ds = ds.train_test_split(test_size=0.1)
-    train_ds = ds["train"]
-    test_ds = ds["test"]
+    train_set = ds["train"]
+    val_set = ds["test"]
 
     # We use the SegformerImageProcessor for the datasets after converting the dataset to hf datasets
     processor = SegformerImageProcessor()
@@ -102,19 +129,9 @@ def training_function(cfg, training_args):
         return inputs
 
     # Set transforms
-    train_ds.set_transform(train_transforms)
-    test_ds.set_transform(val_transforms)
-
-    # train_set, val_set = random_split(
-    #     torch_dataset,
-    #     [0.9, 0.1],
-    #     generator=torch.Generator().manual_seed(cfg["seed"]),
-    # )
-    # train_dataloader = DataLoader(train_set, batch_size=4, shuffle=True, num_workers=8)
-    # val_dataloader = DataLoader(val_set, batch_size=4, shuffle=False, num_workers=8)
-    # batch = next(iter(train_dataloader))
-    # imgs, masks = batch
-    # print(imgs.shape)
+    train_set.set_transform(train_transforms)
+    val_set.set_transform(val_transforms)
+    """
 
     # Load model from hf hub and store it locally
     # model = SegformerForSemanticSegmentation.from_pretrained(
@@ -128,11 +145,21 @@ def training_function(cfg, training_args):
     model = SegformerForSemanticSegmentation.from_pretrained("./checkpoints/mit-b0/")
     # print(model)
 
+    class ImageDataCollator:
+        def __call__(self, features):
+            images = torch.stack([f[0] for f in features])
+            labels = torch.stack([f[1] for f in features])
+            # Add custom preprocessing if necessary
+            return {"pixel_values": images, "labels": labels}
+
+    data_collator = ImageDataCollator()
+
     trainer = Trainer(
         model=model,
         args=training_args,
-        train_dataset=train_ds,
-        eval_dataset=test_ds,
+        train_dataset=train_set,
+        eval_dataset=val_set,
+        data_collator=data_collator,
         # compute_metrics=compute_metrics,
     )
 

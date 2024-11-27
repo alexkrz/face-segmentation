@@ -172,7 +172,7 @@ def main(
 ):
     cfg = locals()
     training_args = TrainingArguments(
-        output_dir="logs/",
+        output_dir="./log_hf",
         num_train_epochs=2,
         per_device_train_batch_size=8,
         per_device_eval_batch_size=8,

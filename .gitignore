@@ -4,7 +4,8 @@
 # Other ignores follow here
 /data/
 /checkpoints/
-/logs/
+/logs_hf/
+/logs_pl/
 
 # Artifacts
 __pycache__/

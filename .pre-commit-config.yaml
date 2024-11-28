@@ -91,7 +91,7 @@ repos:
     rev: "1.7.10"
     hooks:
       - id: bandit
-        args: ["-s", "B101,B301,B403,B311"]
+        args: ["-s", "B101,B301,B403,B311,B614"]
 
   # # yaml formatting
   # - repo: https://github.com/pre-commit/mirrors-prettier

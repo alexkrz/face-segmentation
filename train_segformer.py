@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import pytorch_lightning as pl
 from pytorch_lightning import Trainer
@@ -17,7 +18,9 @@ def main(
 
     datamodule = SegmentationDatamodule(data_dir)
 
-    pl_module = SegformerModule(ckpt_dir)
+    pl_module = SegformerModule.from_pretrained(ckpt_dir)
+    model_config = pl_module.config
+    # print(model_config)
 
     logger = TensorBoardLogger("./logs_pl", name="segformer")
 
@@ -26,6 +29,12 @@ def main(
         max_epochs=2,
         num_sanity_val_steps=0,
     )
+
+    log_dir = Path(trainer.log_dir)
+    log_dir.mkdir(exist_ok=True, parents=True)
+    print("Writing logs to:", str(log_dir))
+    # Write config of pretrained model to .json file
+    model_config.to_json_file(log_dir / "model_config.json")
 
     trainer.fit(
         model=pl_module,

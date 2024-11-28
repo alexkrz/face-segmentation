@@ -63,18 +63,18 @@ class SegmentationDatamodule(LightningDataModule):
 
     def __init__(
         self,
-        root_dir: str,
+        data_dir: str,
         batch_size: int = 8,
         num_workers: int = 8,
     ):
         super().__init__()
-        self.root_dir = root_dir
+        self.data_dir = data_dir
         self.save_hyperparameters()
 
     def setup(self, stage):
         # make assignments here (val/train/test split)
         # called on every process in DDP
-        dataset = SegmentationDataset(root_dir=Path(self.root_dir))
+        dataset = SegmentationDataset(root_dir=Path(self.data_dir))
         self.train_set, self.val_set = random_split(
             dataset,
             [0.9, 0.1],

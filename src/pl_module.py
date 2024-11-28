@@ -1,19 +1,33 @@
 import torch
 import torch.nn as nn
 from pytorch_lightning import LightningModule
-from transformers import SegformerForSemanticSegmentation
+from transformers import SegformerConfig, SegformerForSemanticSegmentation
 
 
 class SegformerModule(LightningModule):
     def __init__(
         self,
-        ckpt_dir: str = "./checkpoints/mit-b0/",
+        config: SegformerConfig = SegformerConfig(),
         lr: float = 1e-3,
     ):
         super().__init__()
-        self.model = SegformerForSemanticSegmentation.from_pretrained(ckpt_dir)
-        self.model.decode_head.train()
-        self.save_hyperparameters()
+        self.model = SegformerForSemanticSegmentation(config)
+        self.config = self.model.config
+        self.save_hyperparameters(ignore=["config"])
+        self.__configure_mode()
+
+    @classmethod
+    def from_pretrained(cls, ckpt_dir: str):
+        pretrained_model = SegformerForSemanticSegmentation.from_pretrained(ckpt_dir)
+        # Overwrite config
+        config = pretrained_model.config
+        pl_module = cls(config)
+        pl_module.model = pretrained_model
+        pl_module.__configure_mode()
+        return pl_module
+
+    def __configure_mode(self):
+        self.model.decode_head.train()  # Set decode_head to train mode
 
     def forward(self, pixel_values, labels):
         output = self.model.forward(pixel_values, labels)

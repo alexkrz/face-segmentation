@@ -8,28 +8,28 @@ import numpy as np
 LABEL_COLORS = {
     "background": [0.0, 0.0, 0.0],
     "skin": [0.843137, 0.0, 0.0],
-    "nose": [0.007843, 0.533333, 0.0],
-    "eye_g": [0.713725, 0.0, 1.0],
+    "l_brow": [0.007843, 0.533333, 0.0],
+    "r_brow": [0.713725, 0.0, 1.0],
     "l_eye": [0.023529, 0.67451, 0.776471],
     "r_eye": [0.596078, 1.0, 0.0],
-    "l_brow": [1.0, 0.647059, 0.188235],
-    "r_brow": [1.0, 0.560784, 0.784314],
-    "l_ear": [0.47451, 0.321569, 0.372549],
-    "r_ear": [0.0, 0.996078, 0.811765],
-    "mouth": [0.690196, 0.647059, 1.0],
-    "u_lip": [0.580392, 0.678431, 0.517647],
-    "l_lip": [0.603922, 0.411765, 0.0],
-    "hair": [0.215686, 0.415686, 0.384314],
-    "hat": [0.827451, 0.0, 0.54902],
-    "ear_r": [0.996078, 0.960784, 0.564706],
-    "neck_l": [0.784314, 0.435294, 0.4],
-    "neck": [0.619608, 0.890196, 1.0],
-    "cloth": [0.0, 0.788235, 0.27451],
+    "eye_g": [1.0, 0.647059, 0.188235],
+    "l_ear": [1.0, 0.560784, 0.784314],
+    "r_ear": [0.47451, 0.321569, 0.372549],
+    "ear_r": [0.0, 0.996078, 0.811765],
+    "nose": [0.690196, 0.647059, 1.0],
+    "mouth": [0.580392, 0.678431, 0.517647],
+    "u_lip": [0.603922, 0.411765, 0.0],
+    "l_lip": [0.215686, 0.415686, 0.384314],
+    "neck": [0.827451, 0.0, 0.54902],
+    "neck_l": [0.996078, 0.960784, 0.564706],
+    "cloth": [0.784314, 0.435294, 0.4],
+    "hair": [0.619608, 0.890196, 1.0],
+    "hat": [0.0, 0.788235, 0.27451],
 }
 
 
 def sample_colors():
-    label2id = {
+    label2id_old = {
         "background": 0,
         "skin": 1,
         "nose": 2,
@@ -50,7 +50,28 @@ def sample_colors():
         "neck": 17,
         "cloth": 18,
     }
-    labels = {index: value for index, value in enumerate(list(label2id.keys()))}
+    id2label = {
+        "0": "background",
+        "1": "skin",
+        "2": "l_brow",
+        "3": "r_brow",
+        "4": "l_eye",
+        "5": "r_eye",
+        "6": "eye_g",
+        "7": "l_ear",
+        "8": "r_ear",
+        "9": "ear_r",
+        "10": "nose",
+        "11": "mouth",
+        "12": "u_lip",
+        "13": "l_lip",
+        "14": "neck",
+        "15": "neck_l",
+        "16": "cloth",
+        "17": "hair",
+        "18": "hat",
+    }
+    labels = {index: value for index, value in enumerate(list(id2label.values()))}
 
     # # Sample 18 different colors from HLS colorspace
     # hues = np.linspace(0, 1, len(labels), endpoint=False)  # Avoid repeating the same color

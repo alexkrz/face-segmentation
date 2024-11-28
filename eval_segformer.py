@@ -2,6 +2,8 @@ from pathlib import Path
 
 import torch
 from PIL import Image
+from safetensors import safe_open
+from safetensors.torch import save_file
 from torchvision import transforms
 
 from src.datamodule import SegmentationDataset
@@ -10,8 +12,8 @@ from src.pl_module import SegformerConfig, SegformerForSemanticSegmentation
 
 def main(
     img_dir: str = "data/025_08.jpg",
-    log_dir: str = "logs_pl/segformer/version_0",
-    ckpt_fp: str = "checkpoints/epoch=1-step=6750.ckpt",
+    log_dir: str = "logs_pl/mit-b0/version_0",
+    ckpt_file: str = "best_model.safetensors",
 ):
     if torch.cuda.is_available():
         device = "cuda"
@@ -32,11 +34,18 @@ def main(
     config = SegformerConfig.from_json_file(log_dir / "model_config.json")
     model = SegformerForSemanticSegmentation(config)
 
-    ckpt = torch.load(log_dir / ckpt_fp, weights_only=True)
-    # print([key for key in ckpt["state_dict"].keys() if "decode_head" in key])
+    # torch.load has security issues, use safetensors instead
+    # ckpt = torch.load(log_dir / ckpt_fp, weights_only=True)
+    # # print([key for key in ckpt["state_dict"].keys() if "decode_head" in key])
 
-    # Remove "model." prefix from checkpoint keys
-    state_dict = {key.replace("model.", ""): value for key, value in ckpt["state_dict"].items()}
+    # # Remove "model." prefix from checkpoint keys
+    # state_dict = {key.replace("model.", ""): value for key, value in ckpt["state_dict"].items()}
+    # save_file(state_dict, log_dir / "best_model.safetensors")
+
+    state_dict = {}
+    with safe_open(log_dir / ckpt_file, framework="pt", device="cpu") as f:
+        for key in f.keys():
+            state_dict[key] = f.get_tensor(key)
 
     # print(model.state_dict().keys())
     msg = model.load_state_dict(state_dict)

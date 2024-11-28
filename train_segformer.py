@@ -2,8 +2,11 @@ import os
 from pathlib import Path
 
 import pytorch_lightning as pl
+import torch
 from pytorch_lightning import Trainer
+from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
+from safetensors.torch import save_file
 
 from src.datamodule import SegmentationDatamodule
 from src.pl_module import SegformerModule
@@ -22,12 +25,16 @@ def main(
     model_config = pl_module.config
     # print(model_config)
 
-    logger = TensorBoardLogger("./logs_pl", name="segformer")
+    tb_logger = TensorBoardLogger("./logs_pl", name="mit-b0")
+
+    cp_callback = ModelCheckpoint(save_weights_only=True)
 
     trainer = Trainer(
-        logger=logger,
+        logger=[tb_logger],
+        callbacks=[cp_callback],
         max_epochs=2,
         num_sanity_val_steps=0,
+        # limit_train_batches=0.1,
     )
 
     log_dir = Path(trainer.log_dir)
@@ -40,6 +47,15 @@ def main(
         model=pl_module,
         datamodule=datamodule,
     )
+
+    # Convert last checkpoint to safetensors after training
+    print("Best model:", cp_callback.best_model_path)
+    ckpt = torch.load(cp_callback.best_model_path, weights_only=True)
+    # print([key for key in ckpt["state_dict"].keys() if "decode_head" in key])
+
+    # Remove "model." prefix from checkpoint keys
+    state_dict = {key.replace("model.", ""): value for key, value in ckpt["state_dict"].items()}
+    save_file(state_dict, log_dir / "best_model.safetensors")
 
 
 if __name__ == "__main__":

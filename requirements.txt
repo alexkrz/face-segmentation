@@ -11,3 +11,4 @@ lightning==2.4.*
 tensorboard==2.18.*
 onnx==1.17.*
 opencv-python==4.10.*
+jsonargparse==4.34.*

@@ -134,12 +134,12 @@ def training_function(cfg, training_args):
     """
 
     # Load model from hf hub and store it locally
-    # model = SegformerForSemanticSegmentation.from_pretrained(
-    #     "nvidia/mit-b0",
-    #     id2label=id2label,
-    #     label2id=label2id,
-    # )
-    # model.save_pretrained("./checkpoints/mit-b0")
+    model = SegformerForSemanticSegmentation.from_pretrained(
+        "nvidia/mit-b0",
+        id2label=id2label,
+        label2id=label2id,
+    )
+    model.save_pretrained("./checkpoints/mit-b0")
 
     # Load local model
     model = SegformerForSemanticSegmentation.from_pretrained("./checkpoints/mit-b0/")
@@ -163,7 +163,7 @@ def training_function(cfg, training_args):
         # compute_metrics=compute_metrics,
     )
 
-    trainer.train()
+    # trainer.train()
 
 
 def main(

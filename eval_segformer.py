@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import torch
+from jsonargparse import CLI
 from PIL import Image
 from safetensors import safe_open
 from safetensors.torch import save_file
@@ -77,4 +78,4 @@ def main(
 
 
 if __name__ == "__main__":
-    main()
+    CLI(main, as_positional=False)

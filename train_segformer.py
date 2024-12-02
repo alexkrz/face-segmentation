@@ -27,14 +27,18 @@ def main(
 
     tb_logger = TensorBoardLogger("./logs_pl", name="mit-b0")
 
-    cp_callback = ModelCheckpoint(save_weights_only=True)
+    cp_callback = ModelCheckpoint(
+        monitor="val_mean_iou",
+        filename="{epoch:d}-{val_mean_iou:.4f}",
+        save_weights_only=True,
+    )
 
     trainer = Trainer(
         logger=[tb_logger],
         callbacks=[cp_callback],
         max_epochs=2,
         num_sanity_val_steps=0,
-        # limit_train_batches=0.1,
+        limit_train_batches=0.1,
     )
 
     log_dir = Path(trainer.log_dir)

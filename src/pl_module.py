@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from pytorch_lightning import LightningModule
+from torchmetrics.segmentation import MeanIoU
 from transformers import SegformerConfig, SegformerForSemanticSegmentation
 
 
@@ -13,6 +14,8 @@ class SegformerModule(LightningModule):
         super().__init__()
         self.model = SegformerForSemanticSegmentation(config)
         self.config = self.model.config
+        self.num_labels = self.model.config.num_labels
+        self.mean_iou = MeanIoU(num_classes=self.num_labels)
         self.save_hyperparameters(ignore=["config"])
         self.__configure_mode()
 
@@ -44,8 +47,19 @@ class SegformerModule(LightningModule):
         imgs, masks = batch
         output = self(imgs, masks)
         loss = output.loss
-        self.log("val_loss", loss, prog_bar=True)
-        return loss
+        self.log("val_loss", loss, prog_bar=False)
+
+        logits = output.logits
+        # Upscale logits to mask size
+        upsampled_logits = torch.nn.functional.interpolate(
+            logits,
+            size=masks.shape[-2::],
+            mode="bilinear",
+            align_corners=False,  # H x W
+        )
+        preds = upsampled_logits.argmax(dim=1)
+        mean_iou = self.mean_iou(preds, masks)
+        self.log("val_mean_iou", mean_iou, on_step=False, on_epoch=True)
 
     def configure_optimizers(self):
         return torch.optim.AdamW(self.model.parameters(), lr=self.hparams.lr)

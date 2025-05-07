@@ -36,7 +36,7 @@ def main(
     trainer = Trainer(
         logger=[tb_logger],
         callbacks=[cp_callback],
-        max_epochs=2,
+        max_epochs=20,
         num_sanity_val_steps=0,
         limit_train_batches=0.1,
     )

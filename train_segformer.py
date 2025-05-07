@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+import jsonargparse
 import pytorch_lightning as pl
 import torch
 from pytorch_lightning import Trainer
@@ -12,21 +13,22 @@ from src.datamodule import SegmentationDatamodule
 from src.pl_module import SegformerModule
 
 
-def main(
-    data_dir: str = os.environ["HOME"] + "/Data/FacialAttributes/celebamask_hq",
-    ckpt_dir: str = "./checkpoints/mit-b0/",
-    seed: int = 42,
-):
-    pl.seed_everything(seed)
+def main(parser: jsonargparse.ArgumentParser):
+    cfg = parser.parse_args()
+    pl.seed_everything(cfg.seed)
 
-    datamodule = SegmentationDatamodule(data_dir)
+    datamodule = SegmentationDatamodule(**cfg.datamodule)
 
-    pl_module = SegformerModule.from_pretrained(ckpt_dir)
+    pl_module = SegformerModule.from_pretrained(cfg.ckpt_dir)
     model_config = pl_module.config
     # print(model_config)
 
+    # Modify logger
+    cfg_logger = cfg.trainer.pop("logger")
     tb_logger = TensorBoardLogger("./logs_pl", name="mit-b0")
 
+    # Modify checkpoint callback
+    cfg_callbacks = cfg.trainer.pop("callbacks")
     cp_callback = ModelCheckpoint(
         monitor="val_mean_iou",
         filename="{epoch:d}-{val_mean_iou:.4f}",
@@ -34,24 +36,17 @@ def main(
         save_weights_only=True,
     )
 
-    trainer = Trainer(
-        logger=[tb_logger],
-        callbacks=[cp_callback],
-        max_epochs=20,
-        num_sanity_val_steps=0,
-        limit_train_batches=0.1,
-    )
+    trainer = Trainer(**cfg.trainer, logger=[tb_logger], callbacks=[cp_callback])
 
     log_dir = Path(trainer.log_dir)
     log_dir.mkdir(exist_ok=True, parents=True)
     print("Writing logs to:", str(log_dir))
     # Write config of pretrained model to .json file
     model_config.to_json_file(log_dir / "model_config.json")
+    # Also write experiment config
+    parser.save(cfg, log_dir / "config.yaml")
 
-    trainer.fit(
-        model=pl_module,
-        datamodule=datamodule,
-    )
+    trainer.fit(model=pl_module, datamodule=datamodule)
 
     # Convert last checkpoint to safetensors after training
     print("Best model:", cp_callback.best_model_path)
@@ -64,4 +59,27 @@ def main(
 
 
 if __name__ == "__main__":
-    main()
+    from jsonargparse import ActionConfigFile, ArgumentParser
+
+    parser = ArgumentParser(parser_mode="omegaconf")
+    parser.add_argument("--config", action=ActionConfigFile)
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--ckpt_dir", type=str, default="./checkpoints/mit-b0/")
+    parser.add_class_arguments(
+        SegmentationDatamodule,
+        "datamodule",
+        default={
+            "data_dir": f"{os.environ['HOME']}/Data/FacialAttributes/celebamask_hq",
+            "batch_size": 8,
+        },
+    )
+    parser.add_class_arguments(
+        Trainer,
+        "trainer",
+        default={
+            "max_epochs": 2,
+            "limit_train_batches": 0.1,
+        },
+    )
+
+    main(parser)

@@ -30,6 +30,7 @@ def main(
     cp_callback = ModelCheckpoint(
         monitor="val_mean_iou",
         filename="{epoch:d}-{val_mean_iou:.4f}",
+        mode="max",
         save_weights_only=True,
     )
 

@@ -1,17 +1,19 @@
 {
+    "files.insertFinalNewline": true,
     "editor.formatOnSave": true,
     "[python]": {
-        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.defaultFormatter": "charliermarsh.ruff",
         "editor.codeActionsOnSave": {
             "source.organizeImports": "explicit"
-        },
+        }
     },
-    "black-formatter.args": [
-        "--line-length",
-        "99"
+    "ruff.lineLength": 99,
+    "ruff.lint.ignore": [
+        "F401", // Ignore unused imports
+        "F841", // Ignore unused variables
     ],
-    "isort.args": [
-        "--profile",
-        "black"
-    ],
+    "notebook.codeActionsOnSave": {
+        "notebook.source.organizeImports": "explicit"
+    },
+    "notebook.formatOnSave.enabled": false,
 }

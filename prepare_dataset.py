@@ -29,7 +29,6 @@ def download_dataset(
                 filename="id2label.json",
                 repo_type="dataset",
             ),
-            "r",
         )
     )
     with open(parquet_dir / "id2label.json", "w") as f:

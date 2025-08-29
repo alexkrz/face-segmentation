@@ -1,7 +1,6 @@
 import json
 import os
 from pathlib import Path
-from typing import Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -36,8 +35,8 @@ class SegmentationDataset(Dataset):
     def __init__(
         self,
         root_dir: Path,
-        img_tfm: Optional[transforms.Compose] = segformer_img_tfms,
-        mask_tfm: Optional[str] = "custom",
+        img_tfm: transforms.Compose | None = segformer_img_tfms,
+        mask_tfm: str | None = "custom",
     ):
         assert root_dir.exists()
         self.img_dir = root_dir / "images"
@@ -69,7 +68,6 @@ class SegmentationDataset(Dataset):
 
 
 def training_function(cfg, training_args):
-
     torch_dataset = SegmentationDataset(
         root_dir=Path(cfg["data_dir"]),
         # img_tfm=None,

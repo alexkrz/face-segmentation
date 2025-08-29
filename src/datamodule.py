@@ -1,6 +1,5 @@
 import json
 from pathlib import Path
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -27,8 +26,8 @@ class SegmentationDataset(Dataset):
     def __init__(
         self,
         root_dir: Path,
-        img_tfm: Optional[transforms.Compose] = segformer_img_tfms,
-        mask_tfm: Optional[str] = "custom",
+        img_tfm: transforms.Compose | None = segformer_img_tfms,
+        mask_tfm: str | None = "custom",
     ):
         assert root_dir.exists()
         self.img_dir = root_dir / "images"
@@ -60,7 +59,6 @@ class SegmentationDataset(Dataset):
 
 
 class SegmentationDatamodule(LightningDataModule):
-
     def __init__(
         self,
         data_dir: str,

@@ -8,5 +8,5 @@ transformers==4.*
 accelerate==1.5.*
 lightning==2.5.*
 tensorboard==2.19.*
-onnx==1.20.*
 opencv-python==4.12.*
+onnx>=1.21.0

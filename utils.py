@@ -135,7 +135,7 @@ def sample_colors():
         "17": "hair",
         "18": "hat",
     }
-    labels = {index: value for index, value in enumerate(list(id2label_xchen.values()))}
+    labels = dict(enumerate(list(id2label_xchen.values())))
 
     # # Sample 18 different colors from HLS colorspace
     # hues = np.linspace(0, 1, len(labels), endpoint=False)  # Avoid repeating the same color

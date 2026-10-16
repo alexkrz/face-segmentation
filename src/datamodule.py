@@ -32,9 +32,9 @@ class SegmentationDataset(Dataset):
         assert root_dir.exists()
         self.img_dir = root_dir / "images"
         self.mask_dir = root_dir / "masks"
-        img_files = sorted(list(self.img_dir.glob("*.jpg")), key=lambda x: int(x.stem))
+        img_files = sorted(self.img_dir.glob("*.jpg"), key=lambda x: int(x.stem))
         img_files = [fp.name for fp in img_files]
-        mask_files = sorted(list(self.mask_dir.glob("*.png")), key=lambda x: int(x.stem))
+        mask_files = sorted(self.mask_dir.glob("*.png"), key=lambda x: int(x.stem))
         mask_files = [fp.name for fp in mask_files]
         self.df = pd.DataFrame({"img_fp": img_files, "mask_fp": mask_files})
         with open(root_dir / "id2label.json") as f:

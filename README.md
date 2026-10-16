@@ -41,10 +41,10 @@ python train_segformer.py
 
 Add sample image to `data/` directory.
 
-Evaluate model with
+Evaluate model with eval script (can be executed as interactive python script):
 
 ```bash
-python eval_segformer.py --img_dir $YOUR_IMG_FILE
+python eval_segformer.py
 ```
 
 ## Optional: Convert model to onnx

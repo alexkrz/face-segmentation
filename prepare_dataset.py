@@ -22,15 +22,13 @@ def download_dataset(
     print(ds)
 
     # Load and store id2label
-    id2label = json.load(
-        open(
-            hf_hub_download(
-                repo_id=hf_dataset_identifier,
-                filename="id2label.json",
-                repo_type="dataset",
-            ),
-        )
+    id2label_path = hf_hub_download(
+        repo_id=hf_dataset_identifier,
+        filename="id2label.json",
+        repo_type="dataset",
     )
+    with open(id2label_path) as f:
+        id2label = json.load(f)
     with open(parquet_dir / "id2label.json", "w") as f:
         json.dump(id2label, f, indent=4)
 

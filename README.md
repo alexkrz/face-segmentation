@@ -2,13 +2,12 @@
 
 ## Setup
 
-Setup conda environment:
+We use [conda](https://github.com/conda-forge/miniforge) and [uv](https://docs.astral.sh/uv/) to set up our python environment:
 
 ```bash
-conda env create -n $YOUR_ENV_NAME -f environment.yml
+conda create -n $YOUR_ENV_NAME python=3.12
 conda activate $YOUR_ENV_NAME
-pip install -r requirements.txt
-pre-commit install
+uv pip install -r requirements.txt
 ```
 
 ## Prepare training dataset

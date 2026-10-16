@@ -16,10 +16,7 @@ def main(
     log_dir: str = "logs_pl/mit-b0/version_0",
     ckpt_file: str = "best_model.safetensors",
 ):
-    if torch.cuda.is_available():
-        device = "cuda"
-    else:
-        device = "cpu"
+    device = "cuda" if torch.cuda.is_available() else "cpu"
     print("device:", device)
 
     pil_img = Image.open(img_dir)

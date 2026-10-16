@@ -29,12 +29,12 @@ def download_dataset(
     )
     with open(id2label_path) as f:
         id2label = json.load(f)
-    with open(parquet_dir / "id2label.json", "w") as f:
-        json.dump(id2label, f, indent=4)
 
     # Store dataset in custom folder
     parquet_dir = Path(parquet_dir)  # type: Path
     parquet_dir.mkdir(exist_ok=True)
+    with open(parquet_dir / "id2label.json", "w") as f:
+        json.dump(id2label, f, indent=4)
     ds["train"].to_parquet(parquet_dir / "celebamaskhq.parquet")
 
 
@@ -59,6 +59,8 @@ def convert_parquet(
     image_dir.mkdir()
     mask_dir = out_dir / "masks"
     mask_dir.mkdir()
+
+    print("Converting parquet file to single files..")
     for idx in tqdm(range(len(df))):
         image = Image.open(io.BytesIO(df.loc[idx]["image"]["bytes"]))
         label = Image.open(io.BytesIO(df.loc[idx]["label"]["bytes"]))
